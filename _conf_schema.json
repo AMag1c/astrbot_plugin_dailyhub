@@ -1,0 +1,243 @@
+{
+  "api_base_url": {
+    "description": "60s API 基址",
+    "type": "string",
+    "default": "https://60s.viki.moe",
+    "hint": "数据接口基址。注意：60s 公共服务所在 Deno Deploy Classic 预计 2026-07-20 停服，届时可改为其它公共实例或你的私有部署地址。"
+  },
+  "api_fallback_hosts": {
+    "description": "备用 API 源",
+    "type": "list",
+    "items": {"type": "string"},
+    "default": [
+      "https://60s.b23.run",
+      "https://60s-api-cf.viki.moe",
+      "https://60s-api.114128.xyz",
+      "https://60s-api-cf.114128.xyz"
+    ],
+    "hint": "主源请求失败时依次回退尝试。每项填一个 Base URL。"
+  },
+  "request_timeout": {
+    "description": "请求超时（秒）",
+    "type": "int",
+    "default": 15
+  },
+  "render_mode": {
+    "description": "图片渲染后端",
+    "type": "string",
+    "options": ["自动", "API渲染", "本地渲染"],
+    "default": "自动",
+    "hint": "决定「出图」时怎么生成图片：自动=优先在线 html_render，失败回退本地 Pillow 文字卡片；API渲染=仅在线 html_render；本地渲染=仅本地 Pillow（需系统中文字体）。每个源到底出图/出文字，由下方各源的「输出形式」决定。"
+  },
+  "dark_mode": {
+    "description": "图片深色主题",
+    "type": "bool",
+    "default": true
+  },
+  "list_top_n": {
+    "description": "榜单/资讯取前 N 条",
+    "type": "int",
+    "default": 15
+  },
+  "enable_dedup": {
+    "description": "推送去重",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后定时推送仅在数据相比上次有变化时才推送，避免重复刷屏。"
+  },
+  "enable_get_commands": {
+    "description": "启用手动获取指令",
+    "type": "bool",
+    "default": true,
+    "hint": "是否注册 /新闻 /微博 /epic 等顶层获取指令。若与其它插件冲突可关闭。"
+  },
+  "daily_push_time": {
+    "description": "周期源默认推送时间",
+    "type": "string",
+    "default": "09:00",
+    "hint": "HH:MM（24 小时制），如 09:00。作用于「每日」组（60秒读懂世界 / AI日报 / Epic）中推送计划留空的源，多个源自动错峰几分钟。"
+  },
+  "hot_push_cron": {
+    "description": "实时源默认推送 Cron",
+    "type": "string",
+    "default": "0 12,20 * * *",
+    "hint": "标准 5 位 Cron【分 时 日 月 周】，作用于「实时」组中推送计划留空的源。默认 0 12,20 * * *=每天 12:00 和 20:00。例：0 9 * * *=每天9点；0 */6 * * *=每6小时；30 8 * * 1-5=工作日8点半"
+  },
+  "ai_rss_url": {
+    "description": "AI 日报 RSS 地址",
+    "type": "string",
+    "default": "https://imjuya.github.io/juya-ai-daily/rss.xml"
+  },
+  "shortlink_api_base": {
+    "description": "短链服务地址（Shlink）",
+    "type": "string",
+    "default": "",
+    "hint": "自建 Shlink 实例根地址，如 https://s.example.com（无需带 /rest/...，自动拼接；支持 http 与内网地址）。留空=不启用短链。配合下方各源的「链接转短链」开关使用。"
+  },
+  "shortlink_api_key": {
+    "description": "短链服务 API Key",
+    "type": "string",
+    "default": "",
+    "hint": "Shlink 的 API Key（请求头 X-Api-Key），可用 `shlink api-key:generate` 生成。与上方地址同时填写才会启用短链。"
+  },
+  "shortlink_domain": {
+    "description": "短链自定义域名（可选）",
+    "type": "string",
+    "default": "",
+    "hint": "Shlink 多域名场景指定短码所属域名；留空用默认域名。"
+  },
+  "shortlink_valid_days": {
+    "description": "短链有效天数",
+    "type": "int",
+    "default": 2,
+    "slider": {"min": 0, "max": 30, "step": 1},
+    "hint": "短链多少天后自动失效（热搜为时效内容，到期失效可避免短链库膨胀）。0=永久有效。"
+  },
+  "shortlink_timeout": {
+    "description": "短链请求超时（秒）",
+    "type": "int",
+    "default": 10,
+    "slider": {"min": 3, "max": 60, "step": 1},
+    "hint": "调用短链服务的超时时间，超时或失败会自动回退使用原始长链接。"
+  },
+  "bulk_add_umo": {
+    "description": "一键订阅：批量添加 UMO 到所有源",
+    "type": "list",
+    "items": {"type": "string"},
+    "default": [],
+    "hint": "在此逐条填入会话 UMO 后【保存并重载插件】，会自动把这些 UMO 加入下方所有数据源的订阅名单，然后清空此处（相当于一键订阅全部源）。UMO 在目标会话发 /sid 获取。"
+  },
+  "bulk_remove_umo": {
+    "description": "一键退订：批量从所有源移除 UMO",
+    "type": "list",
+    "items": {"type": "string"},
+    "default": [],
+    "hint": "在此填入 UMO 后【保存并重载插件】，会从下方所有数据源的订阅名单中移除这些 UMO，然后清空此处。"
+  },
+  "_grp_daily": {
+    "description": "──────── 📅 每日定点推送（默认时间 daily_push_time，如 9 点）────────",
+    "type": "object",
+    "items": {}
+  },
+  "src_news60s": {
+    "description": "📰【每日】60秒读懂世界",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true, "hint": "关闭后不响应获取指令也不推送"},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=图片+文字都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用周期默认(daily_push_time)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、30 8 * * *=每天8点半"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_ai": {
+    "description": "🤖【每日】AI 日报",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "文字", "hint": "默认「文字」=直接推送日报标题与链接。图片=渲染卡片图；图文=两者都发"},
+      "enable_summary": {"description": "附带 LLM 总结", "type": "bool", "default": false, "hint": "默认关闭：仅推送日报标题与各条概览。开启后额外用 LLM 把早报正文精炼成要点（消耗 LLM 额度），文字转「AI 早报速递」、图片顶部加总结卡。"},
+      "llm_provider_id": {"description": "总结使用的模型", "type": "string", "default": "", "_special": "select_provider", "hint": "留空=用 AstrBot 当前默认模型。仅在开启上方「附带 LLM 总结」时生效。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用周期默认(daily_push_time)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_epic": {
+    "description": "🎮【每日】Epic 免费游戏",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用周期默认(daily_push_time，每天定点检查，靠去重仅在变化时推)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 10 * * 4=每周四10点"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "_grp_realtime": {
+    "description": "──────── ⚡ 实时热榜 / 资讯（默认频率 hot_push_cron，如每天 12、20 点）────────",
+    "type": "object",
+    "items": {}
+  },
+  "src_itnews": {
+    "description": "💻【实时】IT 资讯（最新文章）",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_ithome": {
+    "description": "🔥【实时】IT 之家热榜（排行榜）",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_gold": {
+    "description": "🪙【实时】黄金价格",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_douyin": {
+    "description": "🎵【实时】抖音热搜",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
+      "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_rednote": {
+    "description": "📕【实时】小红书热搜",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
+      "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_bili": {
+    "description": "📺【实时】哔哩哔哩热搜",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
+      "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "src_weibo": {
+    "description": "🌐【实时】微博热搜",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
+      "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 12,20 * * *=每天12和20点、0 */6 * * *=每6小时"},
+      "access_mode": {"description": "名单模式", "type": "string", "options": ["all", "whitelist", "blacklist"], "default": "all", "hint": "控制本源「获取指令」的可用范围（定时/手动推送的目标始终是下方名单）：all=所有会话都能获取；whitelist=仅下方名单内能获取；blacklist=下方名单内禁止获取。"},
+      "targets": {"description": "会话名单 (UMO·白/黑名单)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源的推送目标 + 获取访问名单（配合上方「名单模式」）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  }
+}

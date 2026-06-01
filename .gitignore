@@ -1,0 +1,27 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 工具缓存 / 打包产物（dev/build.py 生成于上级目录）
+.ruff_cache/
+*.zip
+
+# 本地测试 / 开发临时脚本（dev/build.py 已按前缀排除，不入库）
+_localtest*
+_itest*
+_build*
+
+# 运行时生成的数据（推送去重 / AI 总结缓存）
+push_cache.json
+ai_summary_cache.json
+
+# IDE / 编辑器
+.vscode/
+*.swp
+
+# 系统
+.DS_Store
+Thumbs.db

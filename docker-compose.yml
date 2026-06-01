@@ -1,0 +1,49 @@
+# Shlink 短链服务（供 dailyhub「链接转短链」使用）
+# 用法：① 改 DEFAULT_DOMAIN 为你的域名 ② 两处密码改成同一个强随机串
+#       ③ 用 Nginx 把该域名 HTTPS 反代到 127.0.0.1:48080
+#       ④ docker compose up -d 后，docker exec shlink shlink api-key:generate 生成 API Key
+#       ⑤ 把「域名」与「API Key」填进 dailyhub 的 shortlink_api_base / shortlink_api_key
+
+services:
+  shlink:
+    image: shlinkio/shlink:5 # 钉大版本，自动取最新补丁
+    container_name: shlink
+    restart: always
+    depends_on:
+      shlink_db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:48080:8080" # 仅本机，由宿主 Nginx 终结 HTTPS 反代
+    environment:
+      - DEFAULT_DOMAIN=shlink.example.com # ← 改成你的短链域名（纯域名，不带 http/https）
+      - IS_HTTPS_ENABLED=true # 经 Nginx 终结 HTTPS，保持 true
+      - TIMEZONE=Asia/Shanghai
+      - REDIRECT_STATUS_CODE=302 # 短链跳转码：301 永久 / 302 临时
+      - DB_DRIVER=postgres
+      - DB_HOST=shlink_db
+      - DB_NAME=shlink
+      - DB_USER=shlink
+      - DB_PASSWORD=CHANGE_ME_strong_random_password # ← 改强随机串，与下方一致
+      # 可选：首次启动直接指定初始 API Key（否则用上面第④步 CLI 生成）
+      # - INITIAL_API_KEY=改成你自己的强随机串
+
+  shlink_db:
+    image: postgres:16-alpine
+    container_name: shlink_db
+    restart: always
+    environment:
+      - POSTGRES_DB=shlink
+      - POSTGRES_USER=shlink
+      - POSTGRES_PASSWORD=CHANGE_ME_strong_random_password # ← 与上方 DB_PASSWORD 一致
+      - TZ=Asia/Shanghai
+    volumes:
+      - shlink_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shlink -d shlink"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  shlink_pg_data:
