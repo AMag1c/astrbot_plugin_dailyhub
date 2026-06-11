@@ -70,7 +70,21 @@ class HubScheduler:
         delay = self._cfg.int("startup_delay")
         for s in self._srcs.SOURCES:
             self._tasks.append(asyncio.create_task(self._source_task(s, delay)))
-        logger.info("[scheduler] 已为 %d 个源启动定时任务", len(self._tasks))
+        # 启动时打印实际生效的排程，便于核对"哪些源会定时推、什么时间"（opt-in 默认应为空）
+        scheduled = [
+            f"{s.key}({self._source_cron(s)})"
+            for s in self._enabled_sources()
+            if self._source_cron(s)
+        ]
+        if scheduled:
+            logger.info(
+                "[scheduler] 定时推送已启用：%s；其余源仅手动获取/推送",
+                "、".join(scheduled),
+            )
+        else:
+            logger.info(
+                "[scheduler] 所有源均未配置定时推送（opt-in），仅响应手动获取/推送"
+            )
 
     def stop(self) -> None:
         for t in self._tasks:

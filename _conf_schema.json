@@ -20,14 +20,16 @@
   "request_timeout": {
     "description": "请求超时（秒）",
     "type": "int",
-    "default": 15
+    "default": 15,
+    "slider": {"min": 5, "max": 60, "step": 1},
+    "hint": "数据请求（API / RSS / 封面图）超时。在线出图渲染超时另见下方「在线出图渲染超时」。"
   },
-  "render_mode": {
-    "description": "图片渲染后端",
-    "type": "string",
-    "options": ["自动", "API渲染", "本地渲染"],
-    "default": "自动",
-    "hint": "决定「出图」时怎么生成图片：自动=优先在线 html_render，失败回退本地 Pillow 文字卡片；API渲染=仅在线 html_render；本地渲染=仅本地 Pillow（需系统中文字体）。每个源到底出图/出文字，由下方各源的「输出形式」决定。"
+  "render_timeout": {
+    "description": "在线出图渲染超时（秒）",
+    "type": "int",
+    "default": 50,
+    "slider": {"min": 10, "max": 120, "step": 5},
+    "hint": "在线 html_render 出图的最长等待秒数，超时即回退纯文字。多条目卡片（含封面图）渲染较慢、远程 t2i 服务繁忙时可适当调大。"
   },
   "dark_mode": {
     "description": "图片深色主题",
@@ -152,7 +154,7 @@
     }
   },
   "_grp_realtime": {
-    "description": "──────── ⚡ 实时热榜 / 资讯（默认频率 hot_push_cron，如每天 12、20 点）────────",
+    "description": "──────── ⚡ 实时热榜 / 资讯（默认不定时推送；填 hot_push_cron 或本组某源的推送计划才会推）────────",
     "type": "object",
     "items": {}
   },

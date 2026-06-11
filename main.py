@@ -32,7 +32,7 @@ from .dailyhub.summarizer import DEFAULT_RSS_URL, AiDaily
     "AMag1c",
     "60s新闻 / AI日报 / Epic免费游戏 / IT资讯 / 黄金价格 / 抖音 / 小红书 / B站 / 微博 "
     "等多源资讯聚合，支持指令手动获取与按源订阅定时推送。",
-    "0.2.0",
+    "v0.2.1",
     "https://github.com/AMag1c/astrbot_plugin_dailyhub",
 )
 class DailyHub(Star):
@@ -150,8 +150,6 @@ class DailyHub(Star):
                 continue
             if ptype == "image_url":
                 comps.append(Comp.Image.fromURL(val))
-            elif ptype == "image_b64":
-                comps.append(Comp.Image.fromBase64(val))
             else:
                 comps.append(Comp.Plain(str(val)))
         return comps or [Comp.Plain("获取失败，请稍后再试 😢")]
@@ -279,7 +277,13 @@ class DailyHub(Star):
     # ================================================================== #
     @filter.llm_tool(name="get_daily_news")
     async def llm_get_news(self, event: AstrMessageEvent, source: str):
-        """获取并发送某个每日资讯或平台热榜的卡片（图/文/图文按该源「输出形式」配置，与对应指令一致）。当用户想查看/获取某个资讯源（新闻、热搜、金价等）时调用。
+        """获取并直接发送指定资讯源/热榜的官方数据卡片（图/文/图文，与对应指令输出完全一致）。
+        触发词：今天金价、黄金多少钱、金价、看看微博热搜、60秒新闻、今日新闻、AI日报、
+        epic喜加一、epic免费游戏、IT资讯、IT热榜、抖音热搜、小红书热搜、B站热搜。
+
+        当用户想看上述任一资讯时，优先调用本工具（直接返回对应官方源的现成数据卡片、自动
+        发送给用户，比联网搜索更准更快），调用后不要自己再复述或总结卡片内容；只有当用户
+        明确要求「用网络搜索 / 联网搜索查最新」时，才改用 web_search。
 
         Args:
             source(string): 资讯源名称。可选：新闻、60s、ai、epic、it资讯、it热搜、金价、抖音、小红书、b站、微博；也支持中文全名如「微博热搜」「黄金价格」

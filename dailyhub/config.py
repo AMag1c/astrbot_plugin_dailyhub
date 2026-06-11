@@ -18,7 +18,7 @@ from typing import Any, Callable, Optional
 DEFAULTS: dict = {
     "api_base_url": "https://60s.viki.moe",
     "request_timeout": 15,
-    "render_mode": "自动",
+    "render_timeout": 50,  # 在线 html_render 出图超时（秒）；超时回退纯文字
     "dark_mode": True,
     "list_top_n": 15,
     "enable_dedup": True,
