@@ -119,7 +119,12 @@ class Renderer:
         url = await self._html_render(
             strat.template, ctx, options={"full_page": True, "type": "png"}
         )
-        return {"type": "image_url", "value": url} if url else None
+        # 仅当是有效 http(s) URL 才用（strip 掉配置/返回里可能的空格）；
+        # 否则（空 / 本地路径 / 异常）返回 None → 上层回退本地 Pillow
+        url = url.strip() if isinstance(url, str) else ""
+        if url.startswith(("http://", "https://")):
+            return {"type": "image_url", "value": url}
+        return None
 
     def _local_card(self, source, text: str) -> Optional[RenderPart]:
         b64 = self._local.render(text, self._cfg.bool("dark_mode"))

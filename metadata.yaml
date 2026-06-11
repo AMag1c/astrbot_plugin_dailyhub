@@ -1,6 +1,6 @@
 name: astrbot_plugin_dailyhub
 display_name: 每日资讯推送
 desc: 60s新闻 / AI日报 / Epic免费游戏 / IT资讯 / 黄金价格 / 抖音 / 小红书 / B站 / 微博 等多源资讯聚合，支持指令手动获取与按源订阅定时推送。
-version: v0.1.0
+version: 0.2.0
 author: AMag1c
 repo: https://github.com/AMag1c/astrbot_plugin_dailyhub

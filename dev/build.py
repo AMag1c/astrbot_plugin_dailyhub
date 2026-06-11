@@ -12,7 +12,7 @@ PARENT = os.path.dirname(ROOT)
 PLUGIN = os.path.basename(ROOT)
 OUT = os.path.join(PARENT, PLUGIN + ".zip")
 
-EXCLUDE_DIRS = {"dev", "docs", "__pycache__", ".git", ".github", ".idea", ".vscode"}
+EXCLUDE_DIRS = {"dev", "docs", "__pycache__", ".ruff_cache", ".git", ".github", ".idea", ".vscode"}
 EXCLUDE_FILES = {".gitignore", "需求方案.md"}
 EXCLUDE_EXT = {".pyc", ".pyo", ".zip"}
 EXCLUDE_PREFIX = ("_localtest", "_itest", "_build")  # 临时测试/构建脚本

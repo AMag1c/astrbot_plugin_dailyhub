@@ -91,24 +91,29 @@ class HubScheduler:
         return [s for s in self._srcs.SOURCES if self._is_enabled(s)]
 
     def _source_cron(self, source) -> Optional[str]:
-        """返回该源的 cron；None 表示不定时推送。"""
+        """返回该源的 cron；None 表示不定时推送（off / 留空且类别默认也空）。"""
         ov = str(self._src_cfg(source.key).get("schedule", "") or "").strip()
         if ov.lower() in _OFF_VALUES:
             return None
         if ov:
             return ov
+        # 留空 → 用类别默认；类别默认也留空则不推送（仅手动获取/推送）
         if source.cadence == "daily":
             return self._daily_cron(source)
-        return str(self._cfg.get("hot_push_cron") or "0 12,20 * * *")
+        cron = str(self._cfg.get("hot_push_cron") or "").strip()
+        return cron or None
 
-    def _daily_cron(self, source) -> str:
-        """由 daily_push_time (HH:MM) 推导 cron，并按日级源序号错峰分钟，避免同刻并发。"""
-        t = str(self._cfg.get("daily_push_time") or "09:00")
+    def _daily_cron(self, source) -> Optional[str]:
+        """由 daily_push_time (HH:MM) 推导 cron；留空/非法则不推送（None）。
+        日级源按序号错峰分钟，避免同刻并发。"""
+        t = str(self._cfg.get("daily_push_time") or "").strip()
+        if not t:
+            return None
         try:
             hh, mm = t.split(":")
             hour, minute = int(hh), int(mm)
         except Exception:  # noqa: BLE001
-            hour, minute = 8, 0
+            return None
         daily_keys = [s.key for s in self._srcs.SOURCES if s.cadence == "daily"]
         idx = daily_keys.index(source.key) if source.key in daily_keys else 0
         minute = (minute + idx) % 60

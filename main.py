@@ -32,7 +32,7 @@ from .dailyhub.summarizer import DEFAULT_RSS_URL, AiDaily
     "AMag1c",
     "60s新闻 / AI日报 / Epic免费游戏 / IT资讯 / 黄金价格 / 抖音 / 小红书 / B站 / 微博 "
     "等多源资讯聚合，支持指令手动获取与按源订阅定时推送。",
-    "v0.1.0",
+    "0.2.0",
     "https://github.com/AMag1c/astrbot_plugin_dailyhub",
 )
 class DailyHub(Star):
@@ -98,29 +98,6 @@ class DailyHub(Star):
 
     def _src_cfg(self, key: str) -> dict:
         return self.cfg.src(key)
-
-    def _session_allowed(self, event: AstrMessageEvent, key: str) -> bool:
-        """按源的会话访问控制：基于该源 access_mode + 会话名单（兼容纯群号）。"""
-        src = self._src_cfg(key)
-        mode = src.get("access_mode", "all")
-        if mode == "all":
-            return True
-        raw = src.get("targets", []) or []
-        if isinstance(raw, str):
-            items = [x.strip() for x in raw.split(",") if x.strip()]
-        else:
-            items = [str(x).strip() for x in raw if str(x).strip()]
-        umo = event.unified_msg_origin
-        try:
-            gid = str(event.get_group_id() or "")
-        except Exception:  # noqa: BLE001
-            gid = ""
-        hit = umo in items or (gid != "" and gid in items)
-        if mode == "whitelist":
-            return hit
-        if mode == "blacklist":
-            return not hit
-        return True
 
     def _apply_bulk_ops(self) -> None:
         """处理「一键批量」：把 bulk_add_umo / bulk_remove_umo 分发到所有源后清空。"""
@@ -226,8 +203,6 @@ class DailyHub(Star):
     async def _emit(self, event: AstrMessageEvent, key: str):
         if not self._c("enable_get_commands", True):
             return
-        if not self._session_allowed(event, key):
-            return
         parts = await self.scheduler.get_one(sources.SOURCE_MAP[key])
         for comps in self._split_chains(parts):
             yield event.chain_result(comps)
@@ -244,8 +219,6 @@ class DailyHub(Star):
     async def cmd_ai(self, event: AstrMessageEvent):
         """获取 AI 日报（标题 + 链接，可选 AI 总结）"""
         if not self._c("enable_get_commands", True):
-            return
-        if not self._session_allowed(event, "ai"):
             return
         if self._src_cfg("ai").get("enable_summary", False):
             yield event.plain_result("🤖 正在获取并总结 AI 日报，请稍候…")
@@ -300,6 +273,27 @@ class DailyHub(Star):
         """获取微博热搜"""
         async for r in self._emit(event, "weibo"):
             yield r
+
+    # ================================================================== #
+    # LLM 函数工具（用户与 AI 对话时，AI 可自动调用获取资讯）
+    # ================================================================== #
+    @filter.llm_tool(name="get_daily_news")
+    async def llm_get_news(self, event: AstrMessageEvent, source: str):
+        """获取并发送某个每日资讯或平台热榜的卡片（图/文/图文按该源「输出形式」配置，与对应指令一致）。当用户想查看/获取某个资讯源（新闻、热搜、金价等）时调用。
+
+        Args:
+            source(string): 资讯源名称。可选：新闻、60s、ai、epic、it资讯、it热搜、金价、抖音、小红书、b站、微博；也支持中文全名如「微博热搜」「黄金价格」
+        """
+        key = sources.resolve(source)
+        if not key:
+            names = "、".join(s.name for s in sources.SOURCES)
+            yield event.plain_result(f"未识别的资讯源「{source}」。可用源：{names}")
+            return
+        src = sources.SOURCE_MAP[key]
+        # 与指令同款渲染：按该源「输出形式」出图/文/图文
+        for comps in self._split_chains(await self.scheduler.get_one(src)):
+            yield event.chain_result(comps)
+        event.stop_event()  # 卡片已发，终止事件，避免 AI 再附加一段回复
 
     # ================================================================== #
     # 手动推送（管理员，推给已订阅会话）
