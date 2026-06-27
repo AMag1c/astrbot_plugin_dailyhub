@@ -128,6 +128,26 @@ SOURCES = [
         "ranklist",
         "/v2/weibo",
     ),
+    SourceDef(
+        "bangumi",
+        "今日番剧",
+        "🎬",
+        ("新番", "番剧", "今日番剧", "bangumi", "新番放送"),
+        "番剧",
+        "hot",
+        "bangumi",
+        special="bangumi",
+    ),
+    SourceDef(
+        "game",
+        "即将发售游戏",
+        "🕹",
+        ("游戏", "新游", "游戏发售", "即将发售", "游戏发售日"),
+        "游戏",
+        "hot",
+        "game",
+        special="game",
+    ),
 ]
 
 SOURCE_MAP = {s.key: s for s in SOURCES}

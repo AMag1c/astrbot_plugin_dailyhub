@@ -1,6 +1,6 @@
 """astrbot_plugin_dailyhub 主入口（薄编排层）。
 
-每日资讯推送：60秒新闻 / AI日报 / Epic / IT资讯 / 金价 / 抖音 / 小红书 / B站 / 微博。
+每日资讯推送：60秒新闻 / AI日报 / Epic / IT资讯 / 金价 / 抖音 / 小红书 / B站 / 微博 / 今日番剧 / 即将发售游戏。
 - 手动获取：/新闻 /ai /epic /微博 … （所有人，回显当前会话）
 - 手动推送：/推送 [源名]（管理员，推给已订阅会话）
 - 订阅管理：/订阅资讯 [源名]、/取消订阅资讯 [源名]、/订阅状态、/资讯菜单
@@ -30,9 +30,9 @@ from .dailyhub.summarizer import DEFAULT_RSS_URL, AiDaily
 @register(
     "astrbot_plugin_dailyhub",
     "AMag1c",
-    "60s新闻 / AI日报 / Epic免费游戏 / IT资讯 / 黄金价格 / 抖音 / 小红书 / B站 / 微博 "
-    "等多源资讯聚合，支持指令手动获取与按源订阅定时推送。",
-    "v0.2.1",
+    "60s新闻 / AI日报 / Epic / IT资讯 / 金价 / 抖音 / 小红书 / B站 / 微博 / 今日番剧 / "
+    "即将发售游戏 等多源资讯聚合，支持指令手动获取与按源订阅定时推送。",
+    "v0.3.0",
     "https://github.com/AMag1c/astrbot_plugin_dailyhub",
 )
 class DailyHub(Star):
@@ -272,6 +272,18 @@ class DailyHub(Star):
         async for r in self._emit(event, "weibo"):
             yield r
 
+    @filter.command("新番", alias={"番剧", "今日番剧", "bangumi", "新番放送"})
+    async def cmd_bangumi(self, event: AstrMessageEvent):
+        """获取今日番剧（Bangumi 番组计划）"""
+        async for r in self._emit(event, "bangumi"):
+            yield r
+
+    @filter.command("游戏", alias={"新游", "游戏发售", "即将发售", "游戏发售日"})
+    async def cmd_game(self, event: AstrMessageEvent):
+        """获取即将发售游戏（RAWG，需配置 API Key）"""
+        async for r in self._emit(event, "game"):
+            yield r
+
     # ================================================================== #
     # LLM 函数工具（用户与 AI 对话时，AI 可自动调用获取资讯）
     # ================================================================== #
@@ -279,14 +291,15 @@ class DailyHub(Star):
     async def llm_get_news(self, event: AstrMessageEvent, source: str):
         """获取并直接发送指定资讯源/热榜的官方数据卡片（图/文/图文，与对应指令输出完全一致）。
         触发词：今天金价、黄金多少钱、金价、看看微博热搜、60秒新闻、今日新闻、AI日报、
-        epic喜加一、epic免费游戏、IT资讯、IT热榜、抖音热搜、小红书热搜、B站热搜。
+        epic喜加一、epic免费游戏、IT资讯、IT热榜、抖音热搜、小红书热搜、B站热搜、
+        今日番剧、新番放送、即将发售游戏、游戏发售。
 
         当用户想看上述任一资讯时，优先调用本工具（直接返回对应官方源的现成数据卡片、自动
         发送给用户，比联网搜索更准更快），调用后不要自己再复述或总结卡片内容；只有当用户
         明确要求「用网络搜索 / 联网搜索查最新」时，才改用 web_search。
 
         Args:
-            source(string): 资讯源名称。可选：新闻、60s、ai、epic、it资讯、it热搜、金价、抖音、小红书、b站、微博；也支持中文全名如「微博热搜」「黄金价格」
+            source(string): 资讯源名称。可选：新闻、60s、ai、epic、it资讯、it热搜、金价、抖音、小红书、b站、微博、新番、游戏；也支持中文全名如「微博热搜」「黄金价格」「今日番剧」「即将发售游戏」
         """
         key = sources.resolve(source)
         if not key:

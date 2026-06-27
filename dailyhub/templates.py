@@ -76,6 +76,21 @@ body.dark  .textcard { background:rgba(255,255,255,.04); }
 body.light .textcard { background:rgba(0,0,0,.035); }
 .textcard .lead { font-size:16px; font-weight:700; margin-bottom:8px; }
 
+/* 番剧行 */
+.bgm-cover { width:50px; height:68px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+.bgm-meta  { font-size:12px; opacity:.72; margin-top:3px; display:flex; gap:12px; flex-wrap:wrap; }
+.bgm-meta .score { color:#e0a83a; font-weight:700; }
+
+/* 游戏卡 */
+.game-card  { border-radius:12px; overflow:hidden; }
+body.dark  .game-card { background:rgba(255,255,255,.05); }
+body.light .game-card { background:rgba(0,0,0,.04); }
+.game-cover { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
+.game-body  { padding:10px 13px; }
+.game-title { font-size:16px; font-weight:800; word-break:break-word; }
+.game-meta  { font-size:12px; opacity:.74; margin-top:5px; display:flex; flex-direction:column; gap:3px; }
+.game-meta .date { color:#42c767; font-weight:700; }
+
 .footer { text-align:center; margin-top:16px; font-size:11px; opacity:.45; }
 """
 
@@ -154,6 +169,40 @@ EPIC_TMPL = _page(
     "<div style='font-size:17px;font-weight:800;margin-bottom:5px;'>{{ g.title }}</div>"
     "<div class='desc' style='font-size:13px;opacity:.72;line-height:1.55;'>{{ g.description }}</div>"
     "</div>"
+    "{% endfor %}"
+    "</div>"
+)
+
+# 今日番剧：封面缩略图 + 中文名 + 评分 + 在看人数（复用榜单 .panel/.row/.rank 视觉）
+BANGUMI_TMPL = _page(
+    "<div class='panel'>"
+    "{% for it in items %}"
+    "<div class='row'>"
+    "<div class='rank {% if it.rank==1 %}top1{% elif it.rank==2 %}top2{% elif it.rank==3 %}top3{% endif %}'>{{ it.rank }}</div>"
+    "{% if it.cover %}<img class='bgm-cover' src='{{ it.cover }}'/>{% endif %}"
+    "<div class='body'><div class='ttl'>{{ it.title }}</div>"
+    "<div class='bgm-meta'>"
+    "{% if it.score %}<span class='score'>★ {{ it.score }}</span>{% endif %}"
+    "{% if it.doing %}<span>👁 {{ it.doing }} 在看</span>{% endif %}"
+    "</div></div>"
+    "</div>"
+    "{% endfor %}"
+    "</div>"
+)
+
+# 即将发售游戏：封面(16:9) + 名称 + 发售日 + 平台 + 评分（双列卡片）
+GAME_TMPL = _page(
+    "<div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px;'>"
+    "{% for g in games %}"
+    "<div class='game-card'>"
+    "{% if g.cover %}<img class='game-cover' src='{{ g.cover }}'/>{% endif %}"
+    "<div class='game-body'>"
+    "<div class='game-title'>{{ g.title }}</div>"
+    "<div class='game-meta'>"
+    "<span class='date'>🗓 {{ g.released }}</span>"
+    "{% if g.platforms %}<span>🕹 {{ g.platforms }}</span>{% endif %}"
+    "{% if g.score %}<span>★ {{ g.score }}</span>{% endif %}"
+    "</div></div></div>"
     "{% endfor %}"
     "</div>"
 )

@@ -42,6 +42,12 @@ def _fmt_hot(v: Any) -> str:
     return str(int(n))
 
 
+def _https(url: Any) -> str:
+    """http 升级为 https（bgm 封面给的是 http，但 client 的 SSRF 防护只放行 https）。"""
+    u = str(url or "").strip()
+    return "https://" + u[7:] if u.startswith("http://") else u
+
+
 def _norm_ranklist(source, raw: Any, top_n: int) -> dict:
     """热榜原始 list -> 渲染友好结构 ``{title, items:[{rank,title,hot,link,cover}]}``。"""
     items = raw if isinstance(raw, list) else []
@@ -471,6 +477,155 @@ class AiKind(_DateSigKind):
             raw["link"] = mapping[raw["link"]]
 
 
+class BangumiKind(Kind):
+    """今日番剧（Bangumi 番组计划）：中文名 + 评分 + 在看人数 + 封面。"""
+
+    name = "bangumi"
+    template = templates.BANGUMI_TMPL
+
+    @staticmethod
+    def _items(raw, top_n):
+        return [
+            x for x in (raw if isinstance(raw, list) else []) if isinstance(x, dict)
+        ][:top_n]
+
+    @staticmethod
+    def _name(it) -> str:
+        return (it.get("name_cn") or it.get("name") or "").strip()
+
+    def to_text(self, source, raw, top_n):
+        items = self._items(raw, top_n)
+        if not items:
+            return f"{source.emoji} {source.name}\n暂无数据"
+        lines = [f"{source.emoji} {source.name}", ""]
+        n = 0
+        for it in items:
+            name = self._name(it)
+            if not name:
+                continue
+            n += 1
+            rating = it.get("rating") if isinstance(it.get("rating"), dict) else {}
+            score = rating.get("score")
+            lines.append(f"{n}. {name}" + (f"  ⭐ {score}" if score else ""))
+        return "\n".join(lines)
+
+    def html_ctx(self, source, raw, top_n, theme):
+        ctx = self._base_ctx(source, theme)
+        items = []
+        for it in self._items(raw, top_n):
+            name = self._name(it)
+            if not name:
+                continue
+            rating = it.get("rating") if isinstance(it.get("rating"), dict) else {}
+            images = it.get("images") if isinstance(it.get("images"), dict) else {}
+            coll = (
+                it.get("collection") if isinstance(it.get("collection"), dict) else {}
+            )
+            doing = coll.get("doing")
+            items.append(
+                {
+                    "rank": len(items) + 1,
+                    "title": _esc(name),
+                    "score": _esc(rating.get("score") or ""),
+                    "doing": _esc(_fmt_hot(doing) if doing else ""),
+                    "cover": _https(images.get("common") or images.get("medium") or ""),
+                }
+            )
+        ctx["items"] = items
+        return ctx
+
+    def has_content(self, ctx):
+        return bool(ctx.get("items"))
+
+    def dedup_basis(self, raw):
+        return sorted(
+            str(it.get("id") or self._name(it))
+            for it in (raw or [])
+            if isinstance(it, dict)
+        )
+
+
+# RAWG parent_platforms 名称 → 简称
+_PLATFORM_MAP = {
+    "PC": "PC",
+    "PlayStation": "PS",
+    "Xbox": "Xbox",
+    "Nintendo": "NS",
+    "Apple Macintosh": "Mac",
+    "Linux": "Linux",
+}
+
+
+class GameKind(Kind):
+    """即将发售游戏（RAWG）：名称 + 发售日 + 平台 + 媒体分 + 封面。"""
+
+    name = "game"
+    template = templates.GAME_TMPL
+
+    @staticmethod
+    def _games(raw, top_n):
+        return [
+            x for x in (raw if isinstance(raw, list) else []) if isinstance(x, dict)
+        ][:top_n]
+
+    @staticmethod
+    def _platforms(g) -> str:
+        names = []
+        for w in g.get("parent_platforms") or []:
+            if isinstance(w, dict):
+                p = (w.get("platform") or {}).get("name") or ""
+                if p:
+                    names.append(_PLATFORM_MAP.get(p, p))
+        return " / ".join(names)
+
+    def to_text(self, source, raw, top_n):
+        games = self._games(raw, top_n)
+        if not games:
+            return f"{source.emoji} {source.name}\n暂无即将发售的游戏"
+        lines = [f"{source.emoji} {source.name}", ""]
+        for g in games:
+            name = (g.get("name") or "").strip()
+            if not name:
+                continue
+            lines.append(f"🗓 {g.get('released') or '待定'}")
+            lines.append(f"🎮 {name}")
+            plats = self._platforms(g)
+            if plats:
+                lines.append(f"🕹 {plats}")
+            lines.append("")  # 空行分隔每款游戏
+        return "\n".join(lines).rstrip()
+
+    def html_ctx(self, source, raw, top_n, theme):
+        ctx = self._base_ctx(source, theme)
+        games = []
+        for g in self._games(raw, top_n):
+            name = (g.get("name") or "").strip()
+            if not name:
+                continue
+            mc = g.get("metacritic")
+            games.append(
+                {
+                    "title": _esc(name),
+                    "released": _esc(g.get("released") or "待定"),
+                    "platforms": _esc(self._platforms(g)),
+                    "score": _esc(f"MC {mc}" if mc else ""),
+                    "cover": g.get("background_image") or "",
+                }
+            )
+        ctx["games"] = games
+        return ctx
+
+    def has_content(self, ctx):
+        return bool(ctx.get("games"))
+
+    def dedup_basis(self, raw):
+        return sorted(
+            str(g.get("id") or g.get("slug") or g.get("name") or "")
+            for g in (raw or [])
+            if isinstance(g, dict)
+        )
+
+
 # ---------------------------------------------------------------------- #
 # 注册表
 # ---------------------------------------------------------------------- #
@@ -483,6 +638,8 @@ KINDS: dict = {
         GoldKind(),
         EpicKind(),
         AiKind(),
+        BangumiKind(),
+        GameKind(),
     )
 }
 

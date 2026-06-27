@@ -187,10 +187,29 @@ class HubScheduler:
             llm_ask = self._llm_ask_factory() if self._llm_ask_factory else None
             enable = bool(self._src_cfg("ai").get("enable_summary", False))
             return await self._ai.build(llm_ask, enable_summary=enable)
+        if source.special == "bangumi":
+            return await self._client.fetch_bangumi_today()
+        if source.special == "game":
+            return await self._client.fetch_rawg_games(
+                str(self._cfg.get("rawg_api_key") or "").strip(),
+                self._cfg.int("game_window_days"),
+                self._cfg.int("list_top_n"),
+            )
         return await self._client.fetch(source.endpoint)
 
     async def get_one(self, source) -> list:
         """手动获取：拉取 + 渲染，返回 part 列表（不涉及订阅/去重）。"""
+        if (
+            source.special == "game"
+            and not str(self._cfg.get("rawg_api_key") or "").strip()
+        ):
+            return [
+                {
+                    "type": "text",
+                    "value": f"{source.emoji} {source.name}\n需先在插件配置填写 RAWG API Key"
+                    "（https://rawg.io/apidocs 免费注册获取）。",
+                }
+            ]
         raw = await self.fetch_raw(source)
         if raw is None:
             return [

@@ -70,6 +70,19 @@
     "type": "string",
     "default": "https://imjuya.github.io/juya-ai-daily/rss.xml"
   },
+  "rawg_api_key": {
+    "description": "RAWG API Key（游戏发售源）",
+    "type": "string",
+    "default": "",
+    "hint": "「即将发售游戏」源所需。到 https://rawg.io/apidocs 免费注册获取。留空则该源不可用（其它源不受影响）。"
+  },
+  "game_window_days": {
+    "description": "游戏发售查询窗口（天）",
+    "type": "int",
+    "default": 180,
+    "slider": {"min": 30, "max": 365, "step": 10},
+    "hint": "查询「今天 ~ 未来 N 天」内即将发售的游戏，按期待度排序取前 list_top_n 条。GTA6 这类大作常在 5-6 个月后，窗口太窄会漏；默认 180 天。"
+  },
   "shortlink_api_base": {
     "description": "短链服务地址（Shlink）",
     "type": "string",
@@ -230,6 +243,31 @@
       "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
+    }
+  },
+  "_grp_extra": {
+    "description": "──────── 🎬 番剧 / 游戏（默认不定时推送，需自填推送计划）────────",
+    "type": "object",
+    "items": {}
+  },
+  "src_bangumi": {
+    "description": "🎬【番剧】今日番剧（Bangumi 番组计划，零配置）",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染番剧卡片(中文名+评分+在看+封面)；文字=纯文字标题列表；图文=两者都发"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 9 * * *=每天9点。今日番剧每天随星期变化，建议每天推。"},
+      "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令）。每项填一个会话 UMO（形如 aiocqhttp:GroupMessage:123456），在目标会话发 /sid 获取。"}
+    }
+  },
+  "src_game": {
+    "description": "🕹【游戏】即将发售游戏（RAWG，需上方填 API Key）",
+    "type": "object",
+    "items": {
+      "enabled": {"description": "启用", "type": "bool", "default": true, "hint": "需先在上方全局配置填 rawg_api_key 才能用。"},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染游戏卡片(封面+发售日+平台)；文字=纯文字列表；图文=两者都发。注意游戏名为英文（RAWG 无中文名）。"},
+      "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron。游戏发售榜变化慢，建议每周推一次，例：0 10 * * 1=每周一10点。"},
+      "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令）。每项填一个会话 UMO（形如 aiocqhttp:GroupMessage:123456），在目标会话发 /sid 获取。"}
     }
   }
 }

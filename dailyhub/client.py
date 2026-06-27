@@ -11,6 +11,7 @@
 
 import asyncio
 import base64
+import datetime
 import ipaddress
 from typing import Any, Optional
 from urllib.parse import urlparse
@@ -119,6 +120,72 @@ class SixtyClient:
         if isinstance(payload, list):
             return payload
         return None
+
+    # ------------------------------------------------------------------ #
+    # 外部 API（非 60s 信封）：Bangumi 番组计划 / RAWG 游戏
+    # ------------------------------------------------------------------ #
+    async def fetch_json(
+        self, url: str, params: Optional[dict] = None, headers: Optional[dict] = None
+    ) -> Any:
+        """通用 GET → 原样返回解析后的 JSON；失败返回 None，不抛异常。"""
+        session = await self._get_session()
+        hdr = {"User-Agent": _UA, "Accept-Encoding": "identity"}
+        if headers:
+            hdr.update(headers)
+        try:
+            async with session.get(url, params=params, headers=hdr) as resp:
+                if resp.status != 200:
+                    logger.warning("外部请求 %s 返回 HTTP %s", url, resp.status)
+                    return None
+                return await resp.json(content_type=None)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("外部请求 %s 出错: %s", url, e)
+            return None
+
+    async def fetch_bangumi_today(self) -> Optional[list]:
+        """取 Bangumi 番组计划当天放送番剧（api.bgm.tv/calendar）。
+
+        返回当天 items 列表（每项含 name_cn/name/rating/images/collection 等原始字段，
+        由 BangumiKind 归一化）；失败/无数据返回 None。
+        """
+        data = await self.fetch_json("https://api.bgm.tv/calendar")
+        if not isinstance(data, list):
+            return None
+        # weekday.id：1=周一..7=周日；Python date.weekday()：0=周一..6=周日 → +1
+        today_id = datetime.date.today().weekday() + 1
+        for day in data:
+            if (
+                isinstance(day, dict)
+                and (day.get("weekday") or {}).get("id") == today_id
+            ):
+                items = day.get("items")
+                return items if isinstance(items, list) else None
+        return None
+
+    async def fetch_rawg_games(
+        self, api_key: str, window_days: int, top_n: int
+    ) -> Optional[list]:
+        """取 RAWG 即将发售游戏（未来 window_days 天，按期待度 ``-added`` 排序）。
+
+        返回 results 列表（含 name/released/background_image/parent_platforms/rating
+        等，由 GameKind 归一化）；未配 key / 失败返回 None。不加 stores 过滤——实测加了
+        会把未来游戏几乎全过滤掉。
+        """
+        if not api_key:
+            return None
+        today = datetime.date.today()
+        future = today + datetime.timedelta(days=max(int(window_days or 1), 1))
+        params = {
+            "key": api_key,
+            "dates": f"{today},{future}",
+            "ordering": "-added",
+            "page_size": max(int(top_n or 10), 1),
+        }
+        data = await self.fetch_json("https://api.rawg.io/api/games", params=params)
+        if not isinstance(data, dict):
+            return None
+        results = data.get("results")
+        return results if isinstance(results, list) else None
 
     # ------------------------------------------------------------------ #
     # 图片抓取（封面图，带 SSRF 防护）

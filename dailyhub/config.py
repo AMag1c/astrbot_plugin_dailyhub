@@ -26,6 +26,8 @@ DEFAULTS: dict = {
     "daily_push_time": "09:00",
     "hot_push_cron": "",  # 默认空 = 实时源不定时推送（opt-in，需自行填 Cron 或逐源设 schedule）
     "ai_rss_url": "https://imjuya.github.io/juya-ai-daily/rss.xml",
+    "rawg_api_key": "",  # 游戏发售源用（rawg.io 免费注册）；空=该源不可用
+    "game_window_days": 180,  # 游戏发售查询窗口（未来多少天，按期待度排序）
     "shortlink_api_base": "",
     "shortlink_api_key": "",
     "shortlink_domain": "",

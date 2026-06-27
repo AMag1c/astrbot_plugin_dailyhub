@@ -6,7 +6,7 @@
 
 ## ✨ 功能
 
-- **10 个数据源**：AI 日报走 RSS（[橘鸦 AI 日报](https://imjuya.github.io/juya-ai-daily/)）+ 可选 LLM 总结，其余均来自 [60s API](https://github.com/vikiboss/60s)。
+- **12 个数据源**：60s 系列（新闻/热榜/金价等）来自 [60s API](https://github.com/vikiboss/60s)；AI 日报走 RSS（[橘鸦 AI 日报](https://imjuya.github.io/juya-ai-daily/)）+ 可选 LLM 总结；**今日番剧**来自 [Bangumi 番组计划](https://bgm.tv)官方 API；**即将发售游戏**来自 [RAWG](https://rawg.io)（需免费 API Key）。
 - **手动获取**：`/新闻`、`/微博`、`/epic` 等顶层指令，结果回显当前会话。
 - **按源订阅 + 定时推送**：每个源在配置里是一张独立卡片，可订阅「全部」或「单个源」，推送频率独立可配，也可设为「只获取不推送」；并支持「一键把某会话加入/移出所有源」。
 - **每源输出形式**：图片 / 文字 / 图文 三选一（文字带原文链接）。AI 日报默认推「标题 + 日报链接」，可选附 LLM 总结。
@@ -31,6 +31,11 @@
 | 📕 小红书热搜 | `/小红书`（xhs、小红书热搜） | `/v2/rednote` | 默认不推送（opt-in） |
 | 📺 哔哩哔哩热搜 | `/b站`（哔哩哔哩、bilibili、B站、b站热搜、B站热搜） | `/v2/bili` | 默认不推送（opt-in） |
 | 🌐 微博热搜 | `/微博`（weibo、微博热搜） | `/v2/weibo` | 默认不推送（opt-in） |
+| 🎬 今日番剧 | `/新番`（番剧、今日番剧、bangumi、新番放送） | Bangumi 番组计划 API | 默认不推送（opt-in） |
+| 🕹 即将发售游戏 | `/游戏`（新游、游戏发售、即将发售、游戏发售日） | RAWG API（需 Key） | 默认不推送（opt-in） |
+
+> **今日番剧**：取 Bangumi 当天放送番剧，含中文名 / 评分 / 在看人数 / 封面，零配置开箱即用。
+> **即将发售游戏**：需先在配置填 `rawg_api_key`（[rawg.io](https://rawg.io/apidocs) 免费注册）；取未来 `game_window_days`（默认 180 天）内按期待度排序的新游，覆盖 GTA6 等大作（游戏名为英文，RAWG 无中文名）。
 
 > **关于定时推送（opt-in）**：默认仅 3 个周期源（60s / AI / Epic）在 `daily_push_time`（默认 09:00）推送；**7 个实时源默认不定时推送**。要让实时源定时推：填全局 `hot_push_cron` 批量开启，或在某个源的「推送计划」里填 Cron 单独开启。无论是否定时，所有源始终可用 `/源名` 手动获取、`/推送` 手动推送。
 
@@ -56,6 +61,8 @@
 > 8. 抖音热搜 → get_daily_news(source="抖音")
 > 9. 小红书热搜 → get_daily_news(source="小红书")
 > 10. B站热搜 / 哔哩哔哩热搜 → get_daily_news(source="b站")
+> 11. 今日番剧 / 新番 / 番剧放送 → get_daily_news(source="新番")
+> 12. 即将发售游戏 / 新游 / 游戏发售 → get_daily_news(source="游戏")
 >
 > 重要规则：
 > - 上述资讯一律用 get_daily_news 获取；工具会直接把卡片发给用户，你不要再复述或总结卡片内容。
@@ -98,6 +105,8 @@
 | `daily_push_time` | 周期源（60s/AI/Epic）默认推送时间；**留空=周期源不定时推送** | 09:00 |
 | `hot_push_cron` | 实时源（其余 7 个）默认推送 Cron；**留空=实时源不定时推送** | **空** |
 | `ai_rss_url` | AI 日报 RSS 地址 | 橘鸦 AI 日报 |
+| `rawg_api_key` | RAWG API Key（「即将发售游戏」源所需，rawg.io 免费注册） | 空 |
+| `game_window_days` | 游戏发售查询窗口（未来 N 天，按期待度排序） | 180 |
 | `shortlink_api_base` / `shortlink_api_key` | 短链服务（Shlink）地址与 Key | 空（不启用） |
 | `shortlink_domain` / `shortlink_valid_days` | 短链自定义域名 / 有效天数 | 空 / 2 |
 | `bulk_add_umo` / `bulk_remove_umo` | 一键把会话 UMO 批量加入/移出**所有源**（保存重载后生效并自动清空） | 空 |
