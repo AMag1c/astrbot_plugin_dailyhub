@@ -188,7 +188,9 @@ class HubScheduler:
             enable = bool(self._src_cfg("ai").get("enable_summary", False))
             return await self._ai.build(llm_ask, enable_summary=enable)
         if source.special == "bangumi":
-            return await self._client.fetch_bangumi_today()
+            return await self._client.fetch_bangumi_today(
+                self._cfg.get("bangumi_api_url")
+            )
         if source.special == "game":
             gc = self._src_cfg("game")  # RAWG key/窗口 已挪进游戏源卡片
             return await self._client.fetch_rawg_games(

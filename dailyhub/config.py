@@ -25,6 +25,7 @@ DEFAULTS: dict = {
     "daily_push_time": "09:00",
     "hot_push_cron": "",  # 默认空 = 实时源不定时推送（opt-in，需自行填 Cron 或逐源设 schedule）
     "ai_rss_url": "https://imjuya.github.io/juya-ai-daily/rss.xml",
+    "bangumi_api_url": "https://api.bgm.tv/calendar",
     "shortlink_api_base": "",
     "shortlink_api_key": "",
     "shortlink_domain": "",
