@@ -31,11 +31,6 @@
     "slider": {"min": 10, "max": 120, "step": 5},
     "hint": "在线 html_render 出图的最长等待秒数，超时即回退纯文字。多条目卡片（含封面图）渲染较慢、远程 t2i 服务繁忙时可适当调大。"
   },
-  "dark_mode": {
-    "description": "图片深色主题",
-    "type": "bool",
-    "default": true
-  },
   "list_top_n": {
     "description": "榜单/资讯取前 N 条",
     "type": "int",
@@ -69,19 +64,6 @@
     "description": "AI 日报 RSS 地址",
     "type": "string",
     "default": "https://imjuya.github.io/juya-ai-daily/rss.xml"
-  },
-  "rawg_api_key": {
-    "description": "RAWG API Key（游戏发售源）",
-    "type": "string",
-    "default": "",
-    "hint": "「即将发售游戏」源所需。到 https://rawg.io/apidocs 免费注册获取。留空则该源不可用（其它源不受影响）。"
-  },
-  "game_window_days": {
-    "description": "游戏发售查询窗口（天）",
-    "type": "int",
-    "default": 180,
-    "slider": {"min": 30, "max": 365, "step": 10},
-    "hint": "查询「今天 ~ 未来 N 天」内即将发售的游戏，按期待度排序取前 list_top_n 条。GTA6 这类大作常在 5-6 个月后，窗口太窄会漏；默认 180 天。"
   },
   "shortlink_api_base": {
     "description": "短链服务地址（Shlink）",
@@ -139,7 +121,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true, "hint": "关闭后不响应获取指令也不推送"},
-      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=图片+文字都发"},
+      "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=用 60s 官方排版图（非本插件渲染，不受主题影响）；文字=纯文字(含链接)；图文=图片+文字都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用周期默认(daily_push_time)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、30 8 * * *=每天8点半"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
     }
@@ -149,6 +131,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "文字", "hint": "默认「文字」=直接推送日报标题与链接。图片=渲染卡片图；图文=两者都发"},
       "enable_summary": {"description": "附带 LLM 总结", "type": "bool", "default": false, "hint": "默认关闭：仅推送日报标题与各条概览。开启后额外用 LLM 把早报正文精炼成要点（消耗 LLM 额度），文字转「AI 早报速递」、图片顶部加总结卡。"},
       "llm_provider_id": {"description": "总结使用的模型", "type": "string", "default": "", "_special": "select_provider", "hint": "留空=用 AstrBot 当前默认模型。仅在开启上方「附带 LLM 总结」时生效。"},
@@ -161,6 +144,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用周期默认(daily_push_time，每天定点检查，靠去重仅在变化时推)；off=不推送(仅手动获取)；或填 5 位 Cron【分 时 日 月 周】，例：0 9 * * *=每天9点、0 10 * * 4=每周四10点"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
@@ -176,6 +160,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
@@ -186,6 +171,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
@@ -196,6 +182,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字；图文=两者都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令——获取指令所有会话都可用）。每项填一个会话标识 UMO（推荐，跨平台精确，形如 aiocqhttp:GroupMessage:123456），也兼容纯群号 123456；在目标会话发 /sid 获取其 UMO。点下方按钮逐条添加。"}
@@ -206,6 +193,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
       "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
@@ -217,6 +205,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
       "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
@@ -228,6 +217,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
       "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
@@ -239,6 +229,7 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染卡片图；文字=纯文字(含链接)；图文=两者都发"},
       "shorten_link": {"description": "链接转短链", "type": "bool", "default": false, "hint": "仅「文字/图文」生效：用顶层配置的 Shlink 服务把本源 🔗 长链转为短链（需先填短链服务地址+API Key）。未配置或失败时自动用原链接。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 12,20 * * *=每天12和20点、0 9 * * *=每天9点、0 */6 * * *=每6小时"},
@@ -255,16 +246,20 @@
     "type": "object",
     "items": {
       "enabled": {"description": "启用", "type": "bool", "default": true},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染番剧卡片(中文名+评分+在看+封面)；文字=纯文字标题列表；图文=两者都发"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron【分 时 日 月 周】单独定时，例：0 9 * * *=每天9点。今日番剧每天随星期变化，建议每天推。"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令）。每项填一个会话 UMO（形如 aiocqhttp:GroupMessage:123456），在目标会话发 /sid 获取。"}
     }
   },
   "src_game": {
-    "description": "🕹【游戏】即将发售游戏（RAWG，需上方填 API Key）",
+    "description": "🕹【游戏】即将发售游戏（RAWG）",
     "type": "object",
     "items": {
-      "enabled": {"description": "启用", "type": "bool", "default": true, "hint": "需先在上方全局配置填 rawg_api_key 才能用。"},
+      "enabled": {"description": "启用", "type": "bool", "default": true, "hint": "需先填下方 RAWG API Key 才能用。"},
+      "theme": {"description": "主题", "type": "string", "options": ["浅色", "深色"], "default": "浅色", "hint": "本源图片卡配色（浅色 / 深色，默认浅色）"},
+      "rawg_api_key": {"description": "RAWG API Key", "type": "string", "default": "", "hint": "本源所需。到 https://rawg.io/apidocs 免费注册获取。留空则本源不可用（其它源不受影响）。"},
+      "game_window_days": {"description": "发售查询窗口（天）", "type": "int", "default": 180, "slider": {"min": 30, "max": 365, "step": 10}, "hint": "查询「今天 ~ 未来 N 天」内即将发售的游戏，按期待度排序取前 list_top_n 条。GTA6 这类大作常在 5-6 个月后，窗口太窄会漏；默认 180 天。"},
       "output": {"description": "输出形式", "type": "string", "options": ["图片", "文字", "图文"], "default": "图片", "hint": "图片=渲染游戏卡片(封面+发售日+平台)；文字=纯文字列表；图文=两者都发。注意游戏名为英文（RAWG 无中文名）。"},
       "schedule": {"description": "推送计划", "type": "string", "default": "", "hint": "留空=用实时默认(hot_push_cron，默认空即不推送)；off=不推送；或填 5 位 Cron。游戏发售榜变化慢，建议每周推一次，例：0 10 * * 1=每周一10点。"},
       "targets": {"description": "推送/订阅名单 (UMO)", "type": "list", "items": {"type": "string"}, "default": [], "hint": "本源定时/手动推送的目标会话名单（仅控制推送，不影响获取指令）。每项填一个会话 UMO（形如 aiocqhttp:GroupMessage:123456），在目标会话发 /sid 获取。"}

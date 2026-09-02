@@ -32,7 +32,7 @@ from .dailyhub.summarizer import DEFAULT_RSS_URL, AiDaily
     "AMag1c",
     "60s新闻 / AI日报 / Epic / IT资讯 / 金价 / 抖音 / 小红书 / B站 / 微博 / 今日番剧 / "
     "即将发售游戏 等多源资讯聚合，支持指令手动获取与按源订阅定时推送。",
-    "v0.3.0",
+    "v0.4.0",
     "https://github.com/AMag1c/astrbot_plugin_dailyhub",
 )
 class DailyHub(Star):

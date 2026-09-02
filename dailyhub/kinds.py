@@ -316,29 +316,46 @@ class GoldKind(_DateSigKind):
             lines += ["", f"更新：{upd}"]
         return "\n".join(lines)
 
+    @staticmethod
+    def _time_of(updated: str) -> str:
+        """从 '2026-07-06 09:28:00' 取时间部分 '09:28:00'。"""
+        s = str(updated or "")
+        return s.split(" ", 1)[1] if " " in s else s
+
+    @staticmethod
+    def _date_cn(date: str) -> str:
+        """'2026-07-06' -> '2026年07月06日'；非法原样返回。"""
+        p = str(date or "").split("-")
+        return f"{p[0]}年{p[1]}月{p[2]}日" if len(p) == 3 else str(date or "")
+
     def html_ctx(self, source, raw, top_n, theme):
-        ctx = self._base_ctx(source, theme)
+        """表格版金价：名称/卖出/今日/最高/最低/单位/报价时间（独立橙表头模板）。"""
         raw = raw if isinstance(raw, dict) else {}
-        ctx["subtitle"] = _esc(raw.get("date", ""))
-        metals = []
-        for m in raw.get("metals") or []:
-            if not isinstance(m, dict):
-                continue
-            rng = []
-            if m.get("high_price"):
-                rng.append(f"高 {m['high_price']}")
-            if m.get("low_price"):
-                rng.append(f"低 {m['low_price']}")
-            metals.append(
-                {
-                    "name": _esc(m.get("name", "")),
-                    "price": _esc(m.get("today_price") or m.get("sell_price") or ""),
-                    "unit": _esc(m.get("unit", "")),
-                    "range": _esc(" / ".join(rng)),
-                }
-            )
-        ctx["metals"] = metals
-        return ctx
+        metals_raw = [m for m in (raw.get("metals") or []) if isinstance(m, dict)]
+        metals = [
+            {
+                "name": _esc(m.get("name", "")),
+                "sell": _esc(m.get("sell_price") or m.get("today_price") or ""),
+                "today": _esc(m.get("today_price") or ""),
+                "high": _esc(m.get("high_price") or ""),
+                "low": _esc(m.get("low_price") or ""),
+                "unit": _esc(m.get("unit") or ""),
+                "time": _esc(self._time_of(m.get("updated"))),
+            }
+            for m in metals_raw
+        ]
+        upd_time = self._time_of(metals_raw[0].get("updated")) if metals_raw else ""
+        subtitle = self._date_cn(raw.get("date", ""))
+        if upd_time:
+            subtitle = f"{subtitle} · 更新时间 {upd_time}".strip(" ·")
+        return {
+            "theme": theme,  # 浅色 / 深色，由每源配置决定
+            "title": "黄金价格今日实时报价",
+            "subtitle": _esc(subtitle),
+            "metals": metals,
+            "footer_left": _esc(f"数据来源：60s API · 共 {len(metals)} 种贵金属行情"),
+            "footer_right": "DailyHub · Powered by AstrBot",
+        }
 
     def has_content(self, ctx):
         return bool(ctx.get("metals"))

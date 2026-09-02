@@ -19,7 +19,7 @@ body {
   -webkit-font-smoothing:antialiased;
 }
 body.dark  { background:linear-gradient(150deg,#11141c,#1a2233,#1e2c44); color:#c7d5e0; }
-body.light { background:linear-gradient(150deg,#eef1f6,#e3e8f1,#d7dde9); color:#2b2f38; }
+body.light { background:linear-gradient(160deg,#eaf2ff 0%,#f4f7fd 48%,#eef4ff 100%); color:#2b3040; }
 
 .header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
 .header .emoji { font-size:30px; }
@@ -31,13 +31,13 @@ body.light .header h1 { color:#1a1f2e; }
 
 .panel { border-radius:16px; padding:8px 4px; backdrop-filter:blur(20px) saturate(160%); }
 body.dark  .panel { background:rgba(30,46,68,.42); border:1px solid rgba(120,170,230,.12); }
-body.light .panel { background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.8); }
+body.light .panel { background:rgba(255,255,255,.74); border:1px solid rgba(150,180,230,.22); box-shadow:0 6px 24px rgba(70,110,180,.10); }
 
 /* 榜单行 */
 .row { display:flex; align-items:flex-start; gap:12px; padding:10px 14px; border-radius:10px; }
 .row + .row { margin-top:2px; }
 body.dark  .row:nth-child(odd)  { background:rgba(255,255,255,.03); }
-body.light .row:nth-child(odd)  { background:rgba(0,0,0,.03); }
+body.light .row:nth-child(odd)  { background:rgba(65,135,245,.055); }
 .rank { flex-shrink:0; width:26px; height:26px; border-radius:8px; font-size:14px; font-weight:800;
         display:flex; align-items:center; justify-content:center; color:#fff; background:#4a5568; }
 .rank.top1 { background:linear-gradient(135deg,#ff5f6d,#ffc371); }
@@ -54,7 +54,7 @@ body.light .row .ttl { color:#1d2330; }
 .art { padding:11px 14px; border-radius:10px; }
 .art + .art { margin-top:2px; }
 body.dark  .art:nth-child(odd) { background:rgba(255,255,255,.03); }
-body.light .art:nth-child(odd) { background:rgba(0,0,0,.03); }
+body.light .art:nth-child(odd) { background:rgba(65,135,245,.055); }
 .art .ttl { font-size:16px; font-weight:700; }
 body.dark  .art .ttl { color:#e8edf3; }
 body.light .art .ttl { color:#1d2330; }
@@ -64,7 +64,7 @@ body.light .art .ttl { color:#1d2330; }
 .gold-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:6px; }
 .gold-card { border-radius:12px; padding:12px 14px; }
 body.dark  .gold-card { background:rgba(255,255,255,.04); }
-body.light .gold-card { background:rgba(0,0,0,.035); }
+body.light .gold-card { background:rgba(65,135,245,.05); }
 .gold-card .gname { font-size:13px; opacity:.75; }
 .gold-card .gprice { font-size:21px; font-weight:800; margin:3px 0; color:#e0a83a; }
 .gold-card .gunit { font-size:12px; opacity:.6; font-weight:500; }
@@ -73,7 +73,7 @@ body.light .gold-card { background:rgba(0,0,0,.035); }
 /* AI / 文本卡 */
 .textcard { padding:16px 18px; border-radius:12px; white-space:pre-wrap; word-break:break-word; font-size:15px; line-height:1.85; }
 body.dark  .textcard { background:rgba(255,255,255,.04); }
-body.light .textcard { background:rgba(0,0,0,.035); }
+body.light .textcard { background:rgba(65,135,245,.05); }
 .textcard .lead { font-size:16px; font-weight:700; margin-bottom:8px; }
 
 /* 番剧行 */
@@ -84,7 +84,7 @@ body.light .textcard { background:rgba(0,0,0,.035); }
 /* 游戏卡 */
 .game-card  { border-radius:12px; overflow:hidden; }
 body.dark  .game-card { background:rgba(255,255,255,.05); }
-body.light .game-card { background:rgba(0,0,0,.04); }
+body.light .game-card { background:rgba(65,135,245,.06); }
 .game-cover { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; }
 .game-body  { padding:10px 13px; }
 .game-title { font-size:16px; font-weight:800; word-break:break-word; }
@@ -134,14 +134,60 @@ ITNEWS_TMPL = _page(
     "</div>"
 )
 
-GOLD_TMPL = _page(
-    "<div class='gold-grid'>"
-    "{% for m in metals %}"
-    "<div class='gold-card'><div class='gname'>{{ m.name }}</div>"
-    "<div class='gprice'>{{ m.price }} <span class='gunit'>{{ m.unit }}</span></div>"
-    "{% if m.range %}<div class='grange'>{{ m.range }}</div>{% endif %}</div>"
-    "{% endfor %}"
-    "</div>"
+# 黄金价格：独立模板（橙色标题横幅 + 蓝表头网格表格，不复用 _page 深色主题）
+GOLD_TMPL = (
+    "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+    "<meta name='viewport' content='width=1419'><style>"
+    "*{margin:0;padding:0;box-sizing:border-box;}"
+    "body{font-family:'Microsoft YaHei','PingFang SC','Noto Sans SC','Source Han Sans SC',sans-serif;"
+    "width:1419px;-webkit-font-smoothing:antialiased;}"
+    "body.light{background:#fff;color:#333;}"
+    "body.dark{background:#141a26;color:#c7d5e0;}"
+    ".gh{background:linear-gradient(90deg,#ff7a18,#ff6a00);padding:36px 0 28px;text-align:center;}"
+    ".gh h1{color:#fff;font-size:48px;font-weight:800;letter-spacing:2px;}"
+    ".gh .sub{color:rgba(255,255,255,.92);font-size:22px;margin-top:13px;}"
+    ".gw{padding:32px 40px 14px;}"
+    ".tw{border-radius:12px;overflow:hidden;}"
+    "body.light .tw{box-shadow:0 3px 20px rgba(80,120,200,.12);}"
+    "body.dark .tw{box-shadow:0 3px 20px rgba(0,0,0,.35);}"
+    "table.gt{width:100%;border-collapse:collapse;table-layout:fixed;}"
+    "table.gt th{background:#4187f5;color:#fff;font-size:27px;font-weight:700;padding:20px 8px;"
+    "text-align:center;border:1px solid #cfe0f7;}"
+    "table.gt td{padding:30px 8px;text-align:center;font-size:29px;}"
+    "body.light table.gt td{border:1px solid #e3e8f2;}"
+    "body.dark table.gt td{border:1px solid #2c3a52;}"
+    "body.light table.gt tbody tr:nth-child(odd){background:#eef3fc;}"
+    "body.light table.gt tbody tr:nth-child(even){background:#fff;}"
+    "body.dark table.gt tbody tr:nth-child(odd){background:#1c2740;}"
+    "body.dark table.gt tbody tr:nth-child(even){background:#161f33;}"
+    "table.gt td.nm{font-weight:600;}"
+    "body.light table.gt td.nm{color:#222;}"
+    "body.dark table.gt td.nm{color:#eaf0f8;}"
+    "table.gt td.sl{font-weight:800;font-size:30px;}"
+    "body.light table.gt td.sl{color:#e4393c;}"
+    "body.dark table.gt td.sl{color:#ff6b6e;}"
+    ".gf{display:flex;justify-content:space-between;padding:20px 40px 32px;font-size:18px;}"
+    "body.light .gf{color:#9aa0a6;}"
+    "body.dark .gf{color:#6b7688;}"
+    "</style></head><body class='{{ theme }}'>"
+    "<div class='gh'><h1>{{ title }}</h1>"
+    "{% if subtitle %}<div class='sub'>{{ subtitle }}</div>{% endif %}</div>"
+    "<div class='gw'><div class='tw'><table class='gt'>"
+    "<colgroup><col style='width:20%'><col style='width:13.4%'><col style='width:13.3%'>"
+    "<col style='width:13.3%'><col style='width:13.3%'><col style='width:13.3%'>"
+    "<col style='width:13.4%'></colgroup>"
+    "<thead><tr>"
+    "<th>名称</th><th>卖出价格</th><th>今日价格</th><th>最高价格</th>"
+    "<th>最低价格</th><th>价格单位</th><th>报价时间</th>"
+    "</tr></thead><tbody>"
+    "{% for m in metals %}<tr>"
+    "<td class='nm'>{{ m.name }}</td><td class='sl'>{{ m.sell }}</td>"
+    "<td>{{ m.today }}</td><td>{{ m.high }}</td><td>{{ m.low }}</td>"
+    "<td>{{ m.unit }}</td><td>{{ m.time }}</td>"
+    "</tr>{% endfor %}"
+    "</tbody></table></div></div>"
+    "<div class='gf'><span>{{ footer_left }}</span><span>{{ footer_right }}</span></div>"
+    "</body></html>"
 )
 
 # AI 日报：可选「AI 总结」卡 + 概览榜单（榜单复用热搜的 .panel/.row/.rank 视觉）

@@ -37,8 +37,10 @@ class Renderer:
     def _top_n(self) -> int:
         return self._cfg.int("list_top_n")
 
-    def _theme(self) -> str:
-        return "dark" if self._cfg.bool("dark_mode") else "light"
+    def _theme(self, source) -> str:
+        """每源单独设主题：src 卡片的 theme（浅色/深色），默认浅色。"""
+        val = str(self._cfg.src(source.key).get("theme") or "").strip()
+        return "dark" if val == "深色" else "light"
 
     def _output_mode(self, source) -> str:
         val = self._cfg.src(source.key).get("output")
@@ -126,7 +128,7 @@ class Renderer:
             return {"type": "image_url", "value": direct}
         if not strat.template or self._html_render is None:
             return None
-        ctx = strat.html_ctx(source, raw, top_n, self._theme())
+        ctx = strat.html_ctx(source, raw, top_n, self._theme(source))
         if not strat.has_content(ctx):
             return None
         await self._fill_covers_in_ctx(ctx)

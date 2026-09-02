@@ -35,7 +35,7 @@
 | 🕹 即将发售游戏 | `/游戏`（新游、游戏发售、即将发售、游戏发售日） | RAWG API（需 Key） | 默认不推送（opt-in） |
 
 > **今日番剧**：取 Bangumi 当天放送番剧，含中文名 / 评分 / 在看人数 / 封面，零配置开箱即用。
-> **即将发售游戏**：需先在配置填 `rawg_api_key`（[rawg.io](https://rawg.io/apidocs) 免费注册）；取未来 `game_window_days`（默认 180 天）内按期待度排序的新游，覆盖 GTA6 等大作（游戏名为英文，RAWG 无中文名）。
+> **即将发售游戏**：需先在 **🕹【游戏】源卡片**里填 `RAWG API Key`（[rawg.io](https://rawg.io/apidocs) 免费注册）；取未来 `发售查询窗口`（默认 180 天）内按期待度排序的新游，覆盖 GTA6 等大作（游戏名为英文，RAWG 无中文名）。
 
 > **关于定时推送（opt-in）**：默认仅 3 个周期源（60s / AI / Epic）在 `daily_push_time`（默认 09:00）推送；**7 个实时源默认不定时推送**。要让实时源定时推：填全局 `hot_push_cron` 批量开启，或在某个源的「推送计划」里填 Cron 单独开启。无论是否定时，所有源始终可用 `/源名` 手动获取、`/推送` 手动推送。
 
@@ -100,13 +100,11 @@
 | `api_base_url` / `api_fallback_hosts` | 60s API 主源与备用源 | viki.moe 等 |
 | `request_timeout` | 数据请求（API/RSS/封面图）超时（秒） | 15 |
 | `render_timeout` | 在线出图渲染超时（秒），超时回退纯文字；t2i 慢可调大 | 50 |
-| `dark_mode` / `list_top_n` | 图片深色主题 / 榜单取前 N 条 | true / 15 |
+| `list_top_n` | 榜单/资讯取前 N 条 | 15 |
 | `enable_dedup` | 定时推送去重（数据无变化不推） | true |
 | `daily_push_time` | 周期源（60s/AI/Epic）默认推送时间；**留空=周期源不定时推送** | 09:00 |
 | `hot_push_cron` | 实时源（其余 7 个）默认推送 Cron；**留空=实时源不定时推送** | **空** |
 | `ai_rss_url` | AI 日报 RSS 地址 | 橘鸦 AI 日报 |
-| `rawg_api_key` | RAWG API Key（「即将发售游戏」源所需，rawg.io 免费注册） | 空 |
-| `game_window_days` | 游戏发售查询窗口（未来 N 天，按期待度排序） | 180 |
 | `shortlink_api_base` / `shortlink_api_key` | 短链服务（Shlink）地址与 Key | 空（不启用） |
 | `shortlink_domain` / `shortlink_valid_days` | 短链自定义域名 / 有效天数 | 空 / 2 |
 | `bulk_add_umo` / `bulk_remove_umo` | 一键把会话 UMO 批量加入/移出**所有源**（保存重载后生效并自动清空） | 空 |
@@ -116,6 +114,7 @@
 配置页里每个数据源是一张卡片，含：
 
 - **`enabled` 启用**：关闭则该源不响应获取指令也不推送。
+- **`theme` 主题**：每个源**单独**设浅色 / 深色（**默认浅色**）；金价源同样支持。（60秒读懂世界用 60s 官方排版图，无此项、不受主题影响。）
 - **`output` 输出形式**：图片 / 文字 / 图文。文字会带原文链接；AI 日报默认「文字」= 标题 + 日报链接。
 - **`shorten_link` 链接转短链**（仅热榜类源，文字/图文模式生效）：开启后用上方 Shlink 服务把本源长链转短链（只对展示的前 `list_top_n` 条生效）。
 - **`schedule` 推送计划**：留空 = 用类别默认；`off` = 只获取不推送；或填 5 位 Cron 自定义。

@@ -190,9 +190,10 @@ class HubScheduler:
         if source.special == "bangumi":
             return await self._client.fetch_bangumi_today()
         if source.special == "game":
+            gc = self._src_cfg("game")  # RAWG key/窗口 已挪进游戏源卡片
             return await self._client.fetch_rawg_games(
-                str(self._cfg.get("rawg_api_key") or "").strip(),
-                self._cfg.int("game_window_days"),
+                str(gc.get("rawg_api_key") or "").strip(),
+                int(gc.get("game_window_days") or 180),
                 self._cfg.int("list_top_n"),
             )
         return await self._client.fetch(source.endpoint)
@@ -201,13 +202,13 @@ class HubScheduler:
         """手动获取：拉取 + 渲染，返回 part 列表（不涉及订阅/去重）。"""
         if (
             source.special == "game"
-            and not str(self._cfg.get("rawg_api_key") or "").strip()
+            and not str(self._src_cfg("game").get("rawg_api_key") or "").strip()
         ):
             return [
                 {
                     "type": "text",
-                    "value": f"{source.emoji} {source.name}\n需先在插件配置填写 RAWG API Key"
-                    "（https://rawg.io/apidocs 免费注册获取）。",
+                    "value": f"{source.emoji} {source.name}\n需先在「🕹【游戏】即将发售游戏」"
+                    "源卡片里填写 RAWG API Key（https://rawg.io/apidocs 免费注册获取）。",
                 }
             ]
         raw = await self.fetch_raw(source)
