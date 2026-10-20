@@ -105,6 +105,7 @@
 | `daily_push_time` | 周期源（60s/AI/Epic）默认推送时间；**留空=周期源不定时推送** | 09:00 |
 | `hot_push_cron` | 实时源（其余 7 个）默认推送 Cron；**留空=实时源不定时推送** | **空** |
 | `ai_rss_url` | AI 日报 RSS 地址 | 橘鸦 AI 日报 |
+| `bangumi_api_url` | Bangumi 日历 API 地址（今日番剧） | api.bgm.tv |
 | `shortlink_api_base` / `shortlink_api_key` | 短链服务（Shlink）地址与 Key | 空（不启用） |
 | `shortlink_domain` / `shortlink_valid_days` | 短链自定义域名 / 有效天数 | 空 / 2 |
 | `bulk_add_umo` / `bulk_remove_umo` | 一键把会话 UMO 批量加入/移出**所有源**（保存重载后生效并自动清空） | 空 |

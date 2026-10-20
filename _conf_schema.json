@@ -65,6 +65,11 @@
     "type": "string",
     "default": "https://imjuya.github.io/juya-ai-daily/rss.xml"
   },
+  "bangumi_api_url": {
+    "description": "Bangumi API 日历地址",
+    "type": "string",
+    "default": "https://api.bgm.tv/calendar"
+  },
   "shortlink_api_base": {
     "description": "短链服务地址（Shlink）",
     "type": "string",

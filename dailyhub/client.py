@@ -142,13 +142,15 @@ class SixtyClient:
             logger.warning("外部请求 %s 出错: %s", url, e)
             return None
 
-    async def fetch_bangumi_today(self) -> Optional[list]:
-        """取 Bangumi 番组计划当天放送番剧（api.bgm.tv/calendar）。
+    async def fetch_bangumi_today(
+        self, api_url: str = "https://api.bgm.tv/calendar"
+    ) -> Optional[list]:
+        """取 Bangumi 番组计划当天放送番剧。
 
         返回当天 items 列表（每项含 name_cn/name/rating/images/collection 等原始字段，
         由 BangumiKind 归一化）；失败/无数据返回 None。
         """
-        data = await self.fetch_json("https://api.bgm.tv/calendar")
+        data = await self.fetch_json(api_url)
         if not isinstance(data, list):
             return None
         # weekday.id：1=周一..7=周日；Python date.weekday()：0=周一..6=周日 → +1
